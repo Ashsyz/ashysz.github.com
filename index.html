@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shift Bidding Table - Tolosa Unit 2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .availability-options {
+            text-align: center;
+        }
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .links a {
+            color: #007BFF;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+        .submit-button {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            background-color: #4CAF50; /* Green */
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .submit-button:hover {
+            background-color: #45a049; /* Darker green */
+        }
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            appearance: checkbox; /* Ensure default checkbox appearance */
+            -webkit-appearance: checkbox; /* For Safari */
+            -moz-appearance: checkbox; /* For Firefox */
+        }
+    </style>
+</head>
+<body>
+    <h1 id="clientNameHeading">Shift Bidding Table - Tolosa Unit 2</h1>
+    <div class="container">
+        <div class="form-group">
+            <label for="staffName">Staff Name:</label>
+            <input type="text" id="staffName" name="staffName" placeholder="Enter your name">
+        </div>
+        <table id="shiftTable">
+            <thead>
+                <tr>
+                    <th>Start Date</th>
+                    <th>Start Day</th>
+                    <th>Service</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Duration</th>
+                    <th>Available?</th>
+                    <th>Available Staffs</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated here dynamically -->
+            </tbody>
+        </table>
+        <form id="staffForm" name="shiftBiddingForm" netlify onsubmit="handleSubmit(event)">
+            <input type="hidden" name="form-name" value="shiftBiddingForm">
+            <input type="hidden" name="staffName" id="formStaffName">
+            <input type="hidden" name="selectedShifts" id="formSelectedShifts">
+            <button type="submit" class="submit-button">Submit</button>
+        </form>
+        <div class="links">
+            <a href="upload_page.html" target="_blank">Import Carelink Excel File</a> | 
+            <a href="javascript:void(0);" onclick="exportTableToExcel()">Export to an Excel File</a>
+        </div>
+    </div>
+
+    <script>
+        // Sample data to match the image
+        const sampleData = [
+            {
+                "Start Date": "02-01-2025",
+                "Start Day": "Thursday",
+                "Service": "ASRL Support",
+                "Start Time": "09:00",
+                "End Time": "15:00",
+                "Duration": "6",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "03-01-2025",
+                "Start Day": "Friday",
+                "Service": "ASRL Support",
+                "Start Time": "15:00",
+                "End Time": "22:00",
+                "Duration": "7",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "03-01-2025",
+                "Start Day": "Friday",
+                "Service": "ASRL Sleep Over",
+                "Start Time": "22:00",
+                "End Time": "06:00",
+                "Duration": "8",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "04-01-2025",
+                "Start Day": "Saturday",
+                "Service": "ASRL Support",
+                "Start Time": "06:00",
+                "End Time": "09:00",
+                "Duration": "3",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "06-01-2025",
+                "Start Day": "Monday",
+                "Service": "LDS Support",
+                "Start Time": "07:00",
+                "End Time": "15:00",
+                "Duration": "8",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "06-01-2025",
+                "Start Day": "Monday",
+                "Service": "ASRL Support",
+                "Start Time": "09:00",
+                "End Time": "15:00",
+                "Duration": "6",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "10-01-2025",
+                "Start Day": "Friday",
+                "Service": "ASRL Support",
+                "Start Time": "15:00",
+                "End Time": "22:00",
+                "Duration": "7",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "10-01-2025",
+                "Start Day": "Friday",
+                "Service": "ASRL Sleep Over",
+                "Start Time": "22:00",
+                "End Time": "06:00",
+                "Duration": "8",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "11-01-2025",
+                "Start Day": "Saturday",
+                "Service": "ASRL Support",
+                "Start Time": "06:00",
+                "End Time": "09:00",
+                "Duration": "3",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "17-01-2025",
+                "Start Day": "Friday",
+                "Service": "ASRL Support",
+                "Start Time": "15:00",
+                "End Time": "22:00",
+                "Duration": "7",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "17-01-2025",
+                "Start Day": "Friday",
+                "Service": "ASRL Sleep Over",
+                "Start Time": "22:00",
+                "End Time": "06:00",
+                "Duration": "8",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "18-01-2025",
+                "Start Day": "Saturday",
+                "Service": "ASRL Support",
+                "Start Time": "06:00",
+                "End Time": "09:00",
+                "Duration": "3",
+                "Available Staffs": []
+            },
+            {
+                "Start Date": "20-01-2025",
+                "Start Day": "Monday",
+                "Service": "ASRL Support",
+                "Start Time": "09:00",
+                "End Time": "15:00",
+                "Duration": "6",
+                "Available Staffs": []
+            }
+        ];
+
+        // Function to populate the table with sample data
+        function populateTable(tableData) {
+            const shiftTable = document.getElementById('shiftTable').getElementsByTagName('tbody')[0];
+            shiftTable.innerHTML = ''; // Clear existing rows
+
+            tableData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+
+                const data = [
+                    row["Start Date"],
+                    row["Start Day"],
+                    row["Service"],
+                    row["Start Time"],
+                    row["End Time"],
+                    row["Duration"],
+                ];
+
+                // Add data to table row
+                data.forEach(value => {
+                    const td = document.createElement('td');
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+
+                // Add Available? checkbox
+                const tdAvailability = document.createElement('td');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.dataset.index = index; // Store row index for reference
+                checkbox.addEventListener('change', () => {
+                    updateAvailableStaffs(checkbox, tr);
+                });
+                tdAvailability.appendChild(checkbox);
+                tr.appendChild(tdAvailability);
+
+                // Add Available Staffs list
+                const tdAvailableStaffs = document.createElement('td');
+                const staffList = document.createElement('ul');
+                staffList.id = `staffList-${index}`; // Unique ID for each staff list
+                if (row["Available Staffs"]) {
+                    row["Available Staffs"].forEach(staff => {
+                        const li = document.createElement('li');
+                        li.textContent = staff;
+                        staffList.appendChild(li);
+                    });
+                }
+                tdAvailableStaffs.appendChild(staffList);
+                tr.appendChild(tdAvailableStaffs);
+
+                // Add row to table
+                shiftTable.appendChild(tr);
+            });
+        }
+
+        // Function to update available staffs
+        function updateAvailableStaffs(checkbox, row) {
+            const staffName = document.getElementById('staffName').value.trim();
+            if (!staffName) {
+                alert("Please enter your name first!");
+                checkbox.checked = false; // Uncheck the box
+                return;
+            }
+
+            const staffList = row.querySelector('td:last-child ul');
+            if (checkbox.checked) {
+                // Add staff name to the list
+                const li = document.createElement('li');
+                li.textContent = staffName;
+                staffList.appendChild(li);
+            } else {
+                // Remove staff name from the list
+                const liToRemove = Array.from(staffList.querySelectorAll('li')).find(li => li.textContent === staffName);
+                if (liToRemove) {
+                    staffList.removeChild(liToRemove);
+                }
+            }
+        }
+
+        // Function to handle form submission
+        async function handleSubmit(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const staffName = document.getElementById('staffName').value.trim();
+            if (!staffName) {
+                alert("Please enter your name first!");
+                return;
+            }
+
+            // Gather selected shifts and staff details
+            const selectedShifts = [];
+            const rows = document.querySelectorAll('#shiftTable tbody tr');
+            rows.forEach((row) => {
+                const checkbox = row.querySelector('input[type="checkbox"]');
+                if (checkbox && checkbox.checked) {
+                    const shiftDetails = {
+                        startDate: row.cells[0].textContent,
+                        startDay: row.cells[1].textContent,
+                        service: row.cells[2].textContent,
+                        startTime: row.cells[3].textContent,
+                        endTime: row.cells[4].textContent,
+                        duration: row.cells[5].textContent,
+                        staffName: staffName,
+                    };
+                    selectedShifts.push(shiftDetails);
+                }
+            });
+
+            if (selectedShifts.length === 0) {
+                alert("No shifts selected. Please select at least one shift.");
+                return;
+            }
+
+            // Send data to backend (e.g., Supabase via Netlify Functions)
+            try {
+                const response = await fetch('/.netlify/functions/submitShift', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ staffName, selectedShifts }),
+                });
+
+                if (response.ok) {
+                    alert("Shift selections saved successfully!");
+                    // Reset the form
+                    document.getElementById('staffName').value = "";
+                    rows.forEach(row => {
+                        const checkbox = row.querySelector('input[type="checkbox"]');
+                        if (checkbox) checkbox.checked = false;
+                    });
+                } else {
+                    alert("Failed to save shift selections. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error saving shift selections:", error);
+                alert("An error occurred. Please try again later.");
+            }
+        }
+
+        // Populate the table with sample data when the page loads
+        window.onload = () => populateTable(sampleData);
+    </script>
+</body>
+</html>
